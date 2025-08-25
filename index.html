@@ -1,1 +1,931 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>立会いシフト表</title>
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 20px;
+            color: #1a202c;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid #bee3f8;
+        }
+
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: -0.025em;
+        }
+
+        .content {
+            padding: 0;
+        }
+
+        .week-section {
+            background-color: #e3f2fd;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 32px;
+        }
+
+        .week-section:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .week-header {
+            background: #f7fafc;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.125rem;
+            text-align: center;
+        }
+        
+        /* 5週間担当回数集計のヘッダー色を青に変更 */
+        .summary-header {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+            padding: 16px 24px;
+            font-weight: 600;
+            font-size: 1.125rem;
+            text-align: center;
+            border-bottom: 1px solid #bee3f8;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .schedule-table th {
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 12px 16px;
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #cbd5e0;
+            border-right: 1px solid #e2e8f0;
+        }
+        
+        .schedule-table th:last-child {
+            border-right: none;
+        }
+
+        /* 5週間担当回数集計のテーブルヘッダーを青に変更 */
+        .summary-table th {
+            background: #3182ce;
+            color: white;
+            border-bottom: 2px solid #bee3f8;
+            border-right: 1px solid #bee3f8;
+        }
+        
+        .summary-table th:last-child {
+            border-right: none;
+        }
+
+        .schedule-table td {
+            padding: 12px 16px;
+            text-align: center;
+            border-bottom: 1px solid #f7fafc;
+            vertical-align: middle;
+            font-size: 0.875rem;
+        }
+        
+        /* 5週間担当回数集計のテーブルセル背景色を青に変更 */
+        .summary-table td {
+            background: rgba(49, 130, 206, 0.1);
+            border-bottom: 1px solid #bee3f8;
+        }
+
+        .schedule-table tr:hover {
+            background: #f7fafc;
+            transition: background-color 0.2s ease;
+        }
+
+        .summary-table tr:hover {
+            background: rgba(49, 130, 206, 0.2);
+        }
+
+        .day-cell {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #2d3748;
+            text-align: left;
+            white-space: nowrap;
+            border-right: 1px solid #e2e8f0;
+        }
+        
+        /* 5週間担当回数集計のメンバー名セル背景色を青に変更 */
+        .summary-table .day-cell {
+            background: rgba(49, 130, 206, 0.1);
+            color: #2c5282;
+            border-right: 1px solid #bee3f8;
+        }
+
+        .meeting-data {
+            background: rgba(49, 130, 206, 0.1);
+            border-left: 3px solid #4299e1;
+            border-right: 1px solid #4299e1;
+        }
+
+        .support-data {
+            background: rgba(102, 187, 106, 0.1);
+            border-left: 3px solid #66bb6a;
+            border-right: 1px solid #66bb6a;
+        }
+
+        .priority-data {
+            background: rgba(229, 62, 62, 0.1);
+            border-left: 3px solid #f56565;
+            border-right: 1px solid #f56565;
+        }
+        
+        /* 5週間担当回数集計のセル色を青系に統一 */
+        .summary-data-cell {
+            background: rgba(49, 130, 206, 0.1);
+            border-left: 3px solid #4299e1;
+            border-right: 1px solid #bee3f8;
+            color: #2c5282;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .summary-data-cell-total {
+            background: rgba(49, 130, 206, 0.2);
+            border-left: 3px solid #4299e1;
+            border-right: 1px solid #bee3f8;
+            color: #2c5282;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .empty-data {
+            color: #a0aec0;
+            font-style: italic;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .data-cell {
+            position: relative;
+            padding-left: 12px;
+        }
+
+        .member-name {
+            display: inline-block;
+            background: white;
+            border-radius: 6px;
+            padding: 4px 8px;
+            margin: 2px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .meeting-data .member-name {
+            color: #2c5282;
+            border: 1px solid #bee3f8;
+        }
+
+        .support-data .member-name {
+            color: #388e3c;
+            border: 1px solid #c8e6c9;
+        }
+
+        .priority-data .member-name {
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .details-section {
+            margin: 24px;
+            padding: 24px;
+            background-color: #e6f7e6;
+            border: 1px solid #b7e0b7;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .details-header {
+            color: #2c72b8;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .details-list {
+            padding-left: 0;
+            list-style: none;
+            line-height: 1.8;
+            color: #495057;
+        }
+
+        .details-list li {
+            margin-bottom: 20px;
+        }
+
+        .duty-item {
+            display: inline-block;
+            background-color: #ffffff;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 4px;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #4a7d4a;
+        }
+
+        .points-section {
+            margin: 24px;
+            padding: 24px;
+            background-color: #fffbeb;
+            border: 1px solid #fdd835;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .points-section h3 {
+            color: #2c72b8;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .points-section ul {
+            list-style: disc;
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+
+        .points-section li {
+            margin-bottom: 12px;
+        }
+
+        /* ゴミ回収ペア表のスタイルを流用 */
+        .header-container {
+            position: relative;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-container h1 {
+            margin: 0;
+            display: inline-block;
+        }
+        
+        .presence-link {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #4299e1;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9em;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .presence-link:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 8px;
+                padding-top: 10px;
+            }
+
+            .header {
+                padding: 16px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .week-header, .summary-header {
+                font-size: 1rem;
+                padding: 12px;
+            }
+
+            .schedule-table th, .schedule-table td {
+                padding: 8px;
+                font-size: 0.75rem;
+            }
+
+            .member-name {
+                font-size: 0.7rem;
+                padding: 3px 6px;
+                margin: 1px;
+            }
+
+            .day-cell {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+
+            .details-section, .points-section {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            .details-header, .points-section h3 {
+                font-size: 1.2rem;
+            }
+
+            .details-list li {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <h1>📋 立会いシフト表</h1>
+            <a href="https://gleamize.github.io/garbage-schedule/" class="presence-link">ゴミ回収ペア表</a>
+        </div>
+        <div class="content">
+            <div class="week-section">
+                <div class="week-header">第1週</div>
+                <div class="table-container">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>曜日</th>
+                                <th>📝 立会い</th>
+                                <th>🏢 15F立会い</th>
+                                <th>🧹 バキューム</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="day-cell">月曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">山城</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">火曜日</td>
+                                <td class="data-cell meeting-data" style="border-right: 3px solid #66bb6a;">
+                                    <span class="member-name">金丸</span>
+                                </td>
+                                <td class="data-cell empty-data">-</td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">水曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">金丸</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">木曜日</td>
+                                <td class="data-cell meeting-data" style="border-right: 3px solid #66bb6a;">
+                                    <span class="member-name">逢坂</span>
+                                </td>
+                                <td class="data-cell empty-data">-</td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">金曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">逢坂</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="week-section">
+                <div class="week-header">第2週</div>
+                <div class="table-container">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>曜日</th>
+                                <th>📝 立会い</th>
+                                <th>🏢 15F立会い</th>
+                                <th>🧹 バキューム</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="day-cell">月曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">山城</span>
+                                    <span class="member-name">逢坂</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">山本</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">火曜日</td>
+                                <td class="data-cell meeting-data" style="border-right: 3px solid #66bb6a;">
+                                    <span class="member-name">山城</span>
+                                </td>
+                                <td class="data-cell empty-data">-</td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">水曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">山城</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">木曜日</td>
+                                <td class="data-cell meeting-data" style="border-right: 3px solid #66bb6a;">
+                                    <span class="member-name">金丸</span>
+                                </td>
+                                <td class="data-cell empty-data">-</td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">金曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">金丸</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="week-section">
+                <div class="week-header">第3週</div>
+                <div class="table-container">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>曜日</th>
+                                <th>📝 立会い</th>
+                                <th>🏢 15F立会い</th>
+                                <th>🧹 バキューム</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="day-cell">月曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">山城</span>
+                                    <span class="member-name">逢坂</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">佐武</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">火曜日</td>
+                                <td class="data-cell meeting-data" style="border-right: 3px solid #66bb6a;">
+                                    <span class="member-name">山本</span>
+                                </td>
+                                <td class="data-cell empty-data">-</td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">水曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">山城</span>
+                                    <span class="member-name">逢坂</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">山本</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">木曜日</td>
+                                <td class="data-cell meeting-data" style="border-right: 3px solid #66bb6a;">
+                                    <span class="member-name">山城</span>
+                                </td>
+                                <td class="data-cell empty-data">-</td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">金曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">山城</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="week-section">
+                <div class="week-header">第4週</div>
+                <div class="table-container">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>曜日</th>
+                                <th>📝 立会い</th>
+                                <th>🏢 15F立会い</th>
+                                <th>🧹 バキューム</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="day-cell">月曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">逢坂</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">火曜日</td>
+                                <td class="data-cell meeting-data" style="border-right: 3px solid #66bb6a;">
+                                    <span class="member-name">佐武</span>
+                                </td>
+                                <td class="data-cell empty-data">-</td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">水曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">山城</span>
+                                    <span class="member-name">逢坂</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">佐武</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">木曜日</td>
+                                <td class="data-cell meeting-data" style="border-right: 3px solid #66bb6a;">
+                                    <span class="member-name">山本</span>
+                                </td>
+                                <td class="data-cell empty-data">-</td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">金曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">山城</span>
+                                    <span class="member-name">逢坂</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">山本</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="week-section">
+                <div class="week-header">第5週</div>
+                <div class="table-container">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>曜日</th>
+                                <th>📝 立会い</th>
+                                <th>🏢 15F立会い</th>
+                                <th>🧹 バキューム</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="day-cell">月曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">金丸</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">火曜日</td>
+                                <td class="data-cell meeting-data" style="border-right: 3px solid #66bb6a;">
+                                    <span class="member-name">逢坂</span>
+                                </td>
+                                <td class="data-cell empty-data">-</td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">水曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">佐武</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">逢坂</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">木曜日</td>
+                                <td class="data-cell meeting-data" style="border-right: 3px solid #66bb6a;">
+                                    <span class="member-name">佐武</span>
+                                </td>
+                                <td class="data-cell empty-data">-</td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">逢坂</span>
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                    <span class="member-name">山城</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">金曜日</td>
+                                <td class="data-cell meeting-data">
+                                    <span class="member-name">山城</span>
+                                    <span class="member-name">逢坂</span>
+                                </td>
+                                <td class="data-cell support-data">
+                                    <span class="member-name">山本</span>
+                                    <span class="member-name">金丸</span>
+                                </td>
+                                <td class="data-cell priority-data">
+                                    <span class="member-name">佐武</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="week-section" style="background: #e3f2fd;">
+                <div class="summary-header">📊 5週間担当回数集計</div>
+                <div class="table-container">
+                    <table class="schedule-table summary-table">
+                        <thead>
+                            <tr>
+                                <th>メンバー</th>
+                                <th>立会い（月金）</th>
+                                <th>立会い（水）</th>
+                                <th>立会い（火木）</th>
+                                <th>15F立会い</th>
+                                <th>バキューム</th>
+                                <th>合計</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="day-cell">逢坂</td>
+                                <td class="summary-data-cell">4回</td>
+                                <td class="summary-data-cell">2回</td>
+                                <td class="summary-data-cell">2回</td>
+                                <td class="summary-data-cell">6回</td>
+                                <td class="summary-data-cell">11回</td>
+                                <td class="summary-data-cell-total">25回</td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">山本</td>
+                                <td class="summary-data-cell">4回</td>
+                                <td class="summary-data-cell">2回</td>
+                                <td class="summary-data-cell">2回</td>
+                                <td class="summary-data-cell">6回</td>
+                                <td class="summary-data-cell">11回</td>
+                                <td class="summary-data-cell-total">25回</td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">金丸</td>
+                                <td class="summary-data-cell">4回</td>
+                                <td class="summary-data-cell">2回</td>
+                                <td class="summary-data-cell">2回</td>
+                                <td class="summary-data-cell">6回</td>
+                                <td class="summary-data-cell">11回</td>
+                                <td class="summary-data-cell-total">25回</td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">佐武</td>
+                                <td class="summary-data-cell">4回</td>
+                                <td class="summary-data-cell">2回</td>
+                                <td class="summary-data-cell">2回</td>
+                                <td class="summary-data-cell">6回</td>
+                                <td class="summary-data-cell">11回</td>
+                                <td class="summary-data-cell-total">25回</td>
+                            </tr>
+                            <tr>
+                                <td class="day-cell">山城</td>
+                                <td class="summary-data-cell">4回</td>
+                                <td class="summary-data-cell">2回</td>
+                                <td class="summary-data-cell">2回</td>
+                                <td class="summary-data-cell">6回</td>
+                                <td class="summary-data-cell">11回</td>
+                                <td class="summary-data-cell-total">25回</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="details-section">
+                <h2 class="details-header">業務内容の詳細</h2>
+                <ul class="details-list">
+                    <li>
+                        <strong>立会い（月金）</strong><br>
+                        <span class="duty-item">ゴミ回収</span>
+                        <span class="duty-item">バキューム</span>
+                        <span class="duty-item">17F机上拭き</span>
+                    </li>
+                    <li>
+                        <strong>立会い（水）</strong><br>
+                        <span class="duty-item">ゴミ回収</span>
+                        <span class="duty-item">バキューム</span>
+                        <span class="duty-item">机上拭き</span>
+                        <span class="duty-item">ブラインド</span>
+                    </li>
+                    <li>
+                        <strong>立会い（火木）</strong><br>
+                        <span class="duty-item">ゴミ回収</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="points-section">
+                <h3>ローテーション設計のポイント</h3>
+                <ul>
+                    <li>全員の業務負担が均等になるように、<span style="color: #f56565;"><strong>5週間を1サイクル</strong></span>としたローテーションで運用します。</li>
+                    <li>各メンバーの総担当回数は25回で完全に均等配分されています</li>
+                    <li>立会い（月金）は全員4回、立会い（水）と立会い（火木）は全員2回ずつで完全均等</li>
+                    <li>15F立会いは全員6回ずつ担当し、負担を公平に分散</li>
+                    <li>バキューム業務は全員11回ずつ担当し、最も頻度の高い業務の負担を均等化</li>
+                    <li>5週間完了後は同じパターンを繰り返すことで、長期的な公平性を維持</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
