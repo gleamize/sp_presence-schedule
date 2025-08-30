@@ -300,23 +300,22 @@
             margin-bottom: 12px;
         }
 
-        /* ゴミ回収ペア表のスタイルを流用 */
+        /* 変更点: ヘッダー部分のスタイルをFlexboxに変更 */
         .header-container {
-            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px; /* タイトルとボタンの間のスペース */
             text-align: center;
-            margin-bottom: 40px;
+            padding-top: 20px; /* 上部に余白を追加 */
         }
 
         .header-container h1 {
             margin: 0;
-            display: inline-block;
         }
         
-        /* 変更点: メニューボタンのスタイル */
+        /* 変更点: メニューコンテナのスタイル */
         .menu-container {
-            position: absolute;
-            top: 5px;
-            right: 5px;
             display: flex;
             gap: 8px; /* ボタン間のスペース */
         }
