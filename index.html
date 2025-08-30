@@ -303,7 +303,7 @@
         /* 変更点: ヘッダー部分のスタイルをFlexboxに変更 */
         .header-container {
             display: flex;
-            flex-direction: column;
+            flex-direction: column-reverse; /* タイトルとボタンの順序を反転 */
             align-items: center;
             gap: 15px; /* タイトルとボタンの間のスペース */
             text-align: center;
@@ -330,6 +330,18 @@
             font-size: 0.9em;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+        }
+        
+        /* 変更点: PC版表示ボタンのスタイルを灰色に変更 */
+        .pc-link {
+            background: #cbd5e0; /* 灰色 */
+            color: #4a5568;
+        }
+        
+        .pc-link:hover {
+            background: #a0aec0; /* ホバー時の灰色 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
 
         .menu-link:hover {
@@ -398,7 +410,7 @@
         <div class="header-container">
             <h1>📋 立会いシフト表</h1>
             <div class="menu-container">
-                <a href="https://gleamize.github.io/presence-schedule/" class="menu-link">PC版表示</a>
+                <a href="https://gleamize.github.io/presence-schedule/" class="menu-link pc-link">PC版表示</a>
                 <a href="https://gleamize.github.io/sp_garbage-schedule/" class="menu-link">ゴミ回収ペア表</a>
             </div>
         </div>
