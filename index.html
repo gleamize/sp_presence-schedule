@@ -333,6 +333,106 @@
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
 
+        /* スマホ用メニューボタンのスタイル */
+        .menu-button {
+            display: none; /* デフォルトは非表示 */
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 100;
+            width: 40px;
+            height: 40px;
+            background: #4299e1;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .menu-button:hover {
+            background: #3182ce;
+        }
+        
+        .menu-button span,
+        .menu-button span::before,
+        .menu-button span::after {
+            display: block;
+            background-color: white;
+            height: 3px;
+            width: 100%;
+            border-radius: 3px;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        
+        .menu-button span::before,
+        .menu-button span::after {
+            content: '';
+            position: absolute;
+            left: 0;
+        }
+        
+        .menu-button span::before {
+            top: 8px;
+        }
+        
+        .menu-button span::after {
+            top: 24px;
+        }
+        
+        .menu-button.active span {
+            background-color: transparent;
+        }
+        
+        .menu-button.active span::before {
+            transform: rotate(45deg);
+            top: 16px;
+            background-color: white;
+        }
+        
+        .menu-button.active span::after {
+            transform: rotate(-45deg);
+            top: 16px;
+            background-color: white;
+        }
+
+        /* スマホ用メニューのスタイル */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100%; /* 初期状態は画面外 */
+            width: 250px;
+            height: 100%;
+            background: #ffffff;
+            padding-top: 60px;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+            z-index: 90;
+            transition: right 0.3s ease;
+            list-style: none;
+        }
+
+        .mobile-menu.menu-open {
+            right: 0;
+        }
+        
+        .mobile-menu li a {
+            display: block;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #3182ce;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .mobile-menu li a:hover {
+            background-color: #edf2f7;
+        }
+
         /* スマホ対応 */
         @media (max-width: 600px) {
             body {
@@ -385,6 +485,16 @@
             .details-list li {
                 margin-bottom: 15px;
             }
+
+            /* スマホ時のみ表示 */
+            .menu-button {
+                display: block;
+            }
+
+            /* スマホ時のみ非表示 */
+            .presence-link {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -393,7 +503,14 @@
         <div class="header-container">
             <h1>📋 立会いシフト表</h1>
             <a href="https://gleamize.github.io/garbage-schedule/" class="presence-link">ゴミ回収ペア表</a>
+            <button class="menu-button" id="menuButton">
+                <span></span>
+            </button>
         </div>
+        <ul class="mobile-menu" id="mobileMenu">
+            <li><a href="https://gleamize.github.io/presence-schedule/">PC版表示</a></li>
+            <li><a href="https://gleamize.github.io/sp_garbage-schedule/">ゴミ回収ペア表</a></li>
+        </ul>
         <div class="content">
             <div class="week-section">
                 <div class="week-header">第1週</div>
@@ -927,5 +1044,14 @@
             </div>
         </div>
     </div>
+    <script>
+        const menuButton = document.getElementById('menuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        menuButton.addEventListener('click', () => {
+            menuButton.classList.toggle('active');
+            mobileMenu.classList.toggle('menu-open');
+        });
+    </script>
 </body>
 </html>
