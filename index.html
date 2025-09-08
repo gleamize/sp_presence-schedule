@@ -405,6 +405,33 @@
                 margin-bottom: 15px;
             }
         }
+
+        /* === マルキー（右→左・往復）：赤枠・幅いっぱい・上下等間隔（右ファイルと同一設定） === */
+        .marquee-wrap {
+            margin: 24px 0;
+            border: 2px solid #ef4444;
+            border-radius: 10px;
+            background: rgba(239, 68, 68, .08);
+            overflow: hidden;
+            width: 100%;
+        }
+        .marquee {
+            position: relative;
+            height: 44px;
+        }
+        .marquee-content {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            will-change: transform;
+            padding: 0 16px;
+            font-weight: 800;
+            font-size: 1.05em;
+            color: #ef4444;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -416,6 +443,14 @@
                 <a href="https://gleamize.github.io/sp_garbage-schedule/" class="menu-link">ゴミ回収ペア表</a>
             </div>
         </div>
+
+        <!-- ★ マルキー：タイトルと第1週の中間（上下24px） -->
+        <div class="marquee-wrap" role="status" aria-live="polite">
+            <div class="marquee">
+                <span id="marquee-content" class="marquee-content">読み込み中...</span>
+            </div>
+        </div>
+
         <div class="content">
             <!-- 第1週（右ファイルのデータに差し替え） -->
             <div class="week-section">
@@ -918,7 +953,7 @@
                     </table>
                 </div>
             </div>
-            
+
             <div class="details-section">
                 <h2 class="details-header">業務内容の詳細</h2>
                 <ul class="details-list">
@@ -955,5 +990,121 @@
             </div>
         </div>
     </div>
+
+    <!-- 週次メッセージ制御（JST・毎週月曜12:00更新・5週ループ）＋ マルキー往復制御（右ファイルと同一設定） -->
+    <script>
+        // ====== 設定ここから ======
+        const PHRASES = [
+            "今週は第1週です！",
+            "今週は第2週です！",
+            "今週は第3週です！",
+            "今週は第4週です！",
+            "今週は第5週です！"
+        ];
+        // 第1週が始まるJSTの「月曜12:00」
+        const CYCLE_START_JST = "2025-09-08T12:00:00+09:00";
+        // マルキーの速度（px/秒）
+        const MARQUEE_SPEED = 30;
+        // ====== 設定ここまで ======
+
+        const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
+
+        function nowInTokyo() {
+            const dtf = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Tokyo',
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hourCycle: 'h23'
+            });
+            const parts = Object.fromEntries(dtf.formatToParts(new Date()).map(p => [p.type, p.value]));
+            return new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}+09:00`);
+        }
+
+        function phraseIndexFor(now, cycleStart) {
+            const diff = now.getTime() - cycleStart.getTime();
+            const weeks = Math.floor(diff / MS_PER_WEEK);
+            return ((weeks % 5) + 5) % 5; // 0..4
+        }
+
+        function nextBoundaryFrom(now, cycleStart) {
+            const diff = now.getTime() - cycleStart.getTime();
+            const weeks = Math.floor(diff / MS_PER_WEEK) + 1;
+            return new Date(cycleStart.getTime() + weeks * MS_PER_WEEK); // 次の月曜12:00
+        }
+
+        function setMarqueeText(text) {
+            const el = document.getElementById('marquee-content');
+            if (!el) return;
+            el.textContent = text;
+            // テキストを差し替えたら、右端からの往復アニメを再初期化
+            requestAnimationFrame(startMarquee);
+        }
+
+        // --- 右端から左端まで往復するマルキー ---
+        let marqueeAnimation;
+        function startMarquee() {
+            const wrap = document.querySelector('.marquee-wrap');
+            const content = document.getElementById('marquee-content');
+            if (!wrap || !content) return;
+
+            // 既存アニメを止める
+            if (marqueeAnimation) {
+                try { marqueeAnimation.cancel(); } catch (_) {}
+            }
+
+            const wrapWidth = wrap.clientWidth;
+            // レイアウト確定のため一旦初期位置に
+            content.style.transform = `translate(0px, -50%)`;
+            const contentWidth = content.clientWidth;
+
+            // 右端スタート（文字が切れないよう完全に内側から）
+            const startX = wrapWidth - contentWidth - 8; // 余白分マイナス
+            // 左端到達位置（内側）
+            const endX = 8;
+
+            content.style.transform = `translate(${startX}px, -50%)`;
+
+            const distance = Math.abs(startX - endX);
+            const duration = Math.max(1000, (distance / MARQUEE_SPEED) * 1000); // px/秒 → ms
+
+            marqueeAnimation = content.animate(
+                [
+                    { transform: `translate(${startX}px, -50%)` },
+                    { transform: `translate(${endX}px, -50%)` }
+                ],
+                {
+                    duration,
+                    iterations: Infinity,
+                    direction: 'alternate',
+                    easing: 'linear'
+                }
+            );
+        }
+
+        // 初期メッセージ設定
+        (function init() {
+            const start = new Date(CYCLE_START_JST);
+            const now = nowInTokyo();
+            const idx = phraseIndexFor(now, start);
+            setMarqueeText(PHRASES[idx]);
+
+            // リサイズで幅が変わったらアニメ再計算
+            window.addEventListener('resize', () => startMarquee());
+
+            // 週境界で文言更新（安全マージン付き）
+            function scheduleNextTick() {
+                const n = nowInTokyo();
+                const next = nextBoundaryFrom(n, start);
+                const ms = Math.max(1000, next.getTime() - n.getTime() + 2000);
+                setTimeout(() => {
+                    const cur = nowInTokyo();
+                    const i = phraseIndexFor(cur, start);
+                    setMarqueeText(PHRASES[i]);
+                    scheduleNextTick();
+                }, ms);
+            }
+            scheduleNextTick();
+        })();
+    </script>
 </body>
 </html>
